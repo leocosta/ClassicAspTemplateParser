@@ -28,7 +28,7 @@ Class Template 'iniciando a classe template
   ' Onde: file_id = "chave referente ao arquivo de template carredado" 
   '       filename = "caminho/nome do arquivo de template a ser carregado"
   Public Sub load_file( file_id, filename )
-	Dim ObjFso, Linha, ObjAbreArq, FileSize, nPos, Found, C, EndPos
+	Dim ObjFso, contentFile, ObjAbreArq, FileSize, nPos, Found, C, EndPos
 	Set ObjFso = Server.CreateObject("Scripting.FileSystemObject")
 
 		If not ObjFso.FileExists(filename) then 
@@ -40,22 +40,16 @@ Class Template 'iniciando a classe template
 		If ObjAbreArq.AtEndOfStream = True Then 
 			Response.Write "O Arquivo de template esta vazio!"
 		Else
-				linha = ""
-			Do While Not ObjAbreArq.AtEndOfStream
-					 ' é atribuído o valor da linha 
-				 ' lida a variável linha
-					 linha = linha + ObjAbreArq.ReadLine & vbCrlf
-			Loop
-			
+			contentFile = ObjAbreArq.ReadAll()
 			set filesize = ObjFso.GetFile(filename)
 
-						If Isarray(files) Then
+			If Isarray(files) Then
 				 Redim Preserve files(file_id)
 			Else 
 				 Redim files(file_id)
 			End if
 			
-			files(file_id) = array( linha, filesize.size )
+			files(file_id) = array( contentFile, filesize.size )
 			get_var( file_id )
 
 			ObjAbreArq.Close
@@ -68,7 +62,7 @@ Class Template 'iniciando a classe template
   End Sub
 
   Public Sub Include_File( file_id, filename )
-		Dim nfilename, ObjFso, ObjAbreArq, include, ntag, linha, pos, tag
+		Dim nfilename, ObjFso, ObjAbreArq, include, ntag, contentFile, pos, tag
 		If file_id = "" Or filename = "" Then
 			 'response.write "ERRO: Parâmetro solicitado faltando"
 			 exit sub
@@ -80,13 +74,9 @@ Class Template 'iniciando a classe template
 		If ObjFso.FileExists(nfilename) then
 
 			Set ObjAbreArq = ObjFso.OpenTextFile(nfilename,1, false, false)
-			linha = ""
-			Do While Not ObjAbreArq.AtEndOfStream
-					 linha = linha + ObjAbreArq.ReadLine & vbCrlf
-			Loop
-			include = linha
+			contentFile = ObjAbreArq.ReadAll()
+			include = contentFile
 
-			'response.write "<xmp>" & include & "</xmp>"
 			ntag = "<include filename=" & chr(34) & filename & chr(34) & ">"
 			pos = instr(files(file_id)(0), ntag)
 			If pos > 0 Then
